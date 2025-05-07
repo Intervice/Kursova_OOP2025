@@ -1,16 +1,10 @@
-# This is a sample Python script.
+from account import AccountFactory
+from customer import Customer
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+acc1 = AccountFactory.create_account("current")
+cus1 = Customer("Intervice","321312312", "Tysmenytsya")
+acc1.attach_owner(cus1)
 
-
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+print(acc1.get_balance())
+acc1.deposit(200)
+acc1.withdraw(103)
