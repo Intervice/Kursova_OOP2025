@@ -81,3 +81,28 @@ class TransactionFactory:
             if target_account is None:
                 raise ValueError("Target account is required for transfer.")
             return TransactionTransfer(amount, account, target_account)
+
+
+class TransactionManager:
+    def __init__(self):
+        self.transactions: list[Transaction] = []
+
+    def add_transaction(self, transaction: Transaction):
+        self.transactions.append(transaction)
+
+    def batch_execute(self):
+        for transaction in self.transactions:
+            try:
+                transaction.execute()
+                print("Done", transaction.get_info())
+            except Exception as ex:
+                print(f"Failed to execute transaction {transaction.id}: {ex}")
+
+    def audit_transactions(self):
+        print("TRANSACTION AUDIT REPORT")
+        for transaction in self.transactions:
+            print(transaction.get_info())
+        print("END OF REPORT")
+
+    def clear_transactions(self):
+        self.transactions.clear()

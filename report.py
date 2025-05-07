@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 from typing import List, TYPE_CHECKING
 from abc import ABC, abstractmethod
 if TYPE_CHECKING:
@@ -49,3 +50,19 @@ class ReportFactory:
             return AccountReport(start_date, end_date)
         else:
             raise ValueError("Invalid report type. Must be 'transactions' or 'accounts'")
+
+
+class ReportGenerator:
+    def __init__(self, save_directory: str = "reports"):
+        self.save_directory = save_directory
+        if not os.path.exists(self.save_directory):
+            os.makedirs(self.save_directory)
+
+    def create_and_save_report(self, report_type: str, start_date: datetime, end_date: datetime, data):
+        report = ReportFactory.create_report(report_type, start_date, end_date)
+        content = report.generate(data)
+        filename = f"{report_type}_report_{start_date.strftime('%Y%m%d')}_{end_date.strftime('%Y%m%d')}.txt"
+        path = os.path.join(self.save_directory, filename)
+        with open(path, "w") as file:
+            file.write(content)
+        print(f"Report saved to {path}")
