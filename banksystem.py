@@ -18,13 +18,13 @@ class BankSystem:
         self.transactions_list = transactions_list if transactions_list is not None else []
         self.loans_list = loans_list if loans_list is not None else []
 
-    def add_client(self, client: Customer):
+    def add_customer(self, client: Customer):
         if client in self.clients_list:
             return f"Client {client} is already in the list."
         self.clients_list.append(client)
         return f"Client {client} has been successfully added."
 
-    def remove_client(self, client: Customer):
+    def remove_customer(self, client: Customer):
         if client in self.clients_list:
             self.clients_list.remove(client)
             return f"Client {client}, was successfully removed."

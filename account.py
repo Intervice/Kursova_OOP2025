@@ -4,31 +4,17 @@ if TYPE_CHECKING:
     from customer import Customer
 
 
-class Subject(ABC):
-    @abstractmethod
-    def attach_owner(self, customer):
-        pass
-
-    @abstractmethod
-    def detach_owner(self):
-        pass
-
-    @abstractmethod
-    def notify(self, old_balance):
-        pass
-
-
-class Account(Subject):
+class Account:
     account_number = 5375000000000000
 
     @staticmethod
     def generate_acc_number():
         Account.account_number += 1
-        return Account.account_number
+        return str(Account.account_number)
 
     def __init__(self, type_of_account):
         self.__account_number = Account.generate_acc_number()
-        self.__balance = 0
+        self.__balance = 0.0
         self.__type_of_account = type_of_account
         self.__owner = None
 

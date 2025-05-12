@@ -26,6 +26,10 @@ class Transaction(ABC):
     def execute(self):
         pass
 
+    @abstractmethod
+    def undo(self):
+        pass
+
 
 class TransactionDeposit(Transaction):
     def __init__(self, amount, account):
@@ -37,6 +41,9 @@ class TransactionDeposit(Transaction):
     def execute(self):
         self.account.deposit(self.amount)
 
+    def undo(self):
+        self.account.withdraw(self.amount)
+
 
 class TransactionWithdraw(Transaction):
     def __init__(self, amount, account):
@@ -47,6 +54,9 @@ class TransactionWithdraw(Transaction):
 
     def execute(self):
         self.account.withdraw(self.amount)
+
+    def undo(self):
+        self.account.deposit(self.amount)
 
 
 class TransactionTransfer(Transaction):
@@ -65,6 +75,10 @@ class TransactionTransfer(Transaction):
         except Exception as error:
             self.account.deposit(self.amount)
             print("Error:", error)
+
+    def undo(self):
+        self.target_account.withdraw(self.amount)
+        self.account.deposit(self.amount)
 
 
 class TransactionFactory:
@@ -86,6 +100,8 @@ class TransactionFactory:
 class TransactionManager:
     def __init__(self):
         self.transactions: list[Transaction] = []
+        self.undo_stack: list[Transaction] = []
+        self.redo_stack: list[Transaction] = []
 
     def add_transaction(self, transaction: Transaction):
         self.transactions.append(transaction)
@@ -94,15 +110,42 @@ class TransactionManager:
         for transaction in self.transactions:
             try:
                 transaction.execute()
+                self.undo_stack.append(transaction)
+                self.redo_stack.clear()
                 print("Done", transaction.get_info())
             except Exception as ex:
                 print(f"Failed to execute transaction {transaction.id}: {ex}")
+        self.transactions.clear()
 
     def audit_transactions(self):
         print("TRANSACTION AUDIT REPORT")
-        for transaction in self.transactions:
+        for transaction in self.undo_stack:
             print(transaction.get_info())
         print("END OF REPORT")
 
     def clear_transactions(self):
         self.transactions.clear()
+
+    def undo(self):
+        if not self.undo_stack:
+            print("Nothing to undo.")
+            return
+        transaction = self.undo_stack.pop()
+        try:
+            transaction.undo()
+            self.redo_stack.append(transaction)
+            print(f"Undone: {transaction.get_info()}")
+        except Exception as ex:
+            print(f"Failed to undo transaction {transaction.id}: {ex}")
+
+    def redo(self):
+        if not self.redo_stack:
+            print("Nothing to redo.")
+            return
+        transaction = self.redo_stack.pop()
+        try:
+            transaction.execute()
+            self.undo_stack.append(transaction)
+            print(f"Redone: {transaction.get_info()}")
+        except Exception as ex:
+            print(f"Failed to redo transaction {transaction.id}: {ex}")
