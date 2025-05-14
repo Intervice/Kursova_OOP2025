@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from account import Account
-    from loan import Loan
+from loan import Loan
+from banksystem import BankSystem
+
 
 
 class Observer(ABC):
@@ -25,6 +27,10 @@ class Customer(Observer):
         self.accounts_list: list[Account] = []
         self.loans: list[Loan] = []
         self.profile = CustomerProfile(self)
+        BankSystem("").add_customer(self)
+
+    def __del__(self):
+        BankSystem("").remove_customer(self)
 
     def update(self, account_number, old_balance, new_balance):
         print(f"Customer {self.username} was notified about of the balance change.\n\t"
@@ -39,15 +45,20 @@ class Customer(Observer):
             print(f"Account {account.get_info()} is already in {self.username}'s accounts list")
             return
         self.accounts_list.append(account)
+        if account.get_owner() != self:
+            account.attach_owner(self)
         print(f"Account {account} has been successfully added.")
 
-    def create_loan(self, amount: float, rate, term, strategy):
-        loan = Loan(self, amount, rate, term, strategy)
-        self.loans.append(loan)
+    def create_loan(self, amount: float, rate, term, strategy, status):
+        self.loans.append(Loan(self, amount, rate, term, strategy, status))
+
+    def remove_loan(self, loan):
+        self.loans.remove(loan)
 
     def remove_account(self, account: 'Account'):
         if account in self.accounts_list:
             self.accounts_list.remove(account)
+            account.detach_owner()
         else:
             print(f"There no such account in {self.username}'s accounts list")
 

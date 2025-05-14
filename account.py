@@ -1,8 +1,7 @@
-from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
+from banksystem import BankSystem
 if TYPE_CHECKING:
     from customer import Customer
-
 
 class Account:
     account_number = 5375000000000000
@@ -17,11 +16,17 @@ class Account:
         self.__balance = 0.0
         self.__type_of_account = type_of_account
         self.__owner = None
+        BankSystem("").add_account(self)
+
 
     def attach_owner(self, customer: 'Customer'):
         self.__owner = customer
+        if self not in customer.accounts_list:
+            customer.accounts_list.append(self)
 
     def detach_owner(self):
+        if self in self.__owner.accounts_list:
+            self.__owner.accounts_list.remove(self)
         self.__owner = None
 
     def notify(self, old_balance):
@@ -34,7 +39,10 @@ class Account:
         return self.__balance
 
     def get_info(self):
-        return f"{self.__account_number} -> {self.__balance}"
+        return f"{self.__owner.username if self.__owner else ''} {self.__account_number} -> {self.__balance}"
+
+    def get_owner(self):
+        return self.__owner
 
     @staticmethod
     def check_balance_amount(amount):
@@ -63,6 +71,8 @@ class Account:
             else:
                 raise ValueError("There is no enough money to withdraw.")
 
+    def __del__(self):
+        BankSystem("").remove_account(self)
 
 class CurrentAccount(Account):
     def __init__(self):

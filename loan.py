@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 if TYPE_CHECKING:
     from customer import Customer
-
+from banksystem import BankSystem
 
 class InterestStrategy(ABC):
     @abstractmethod
@@ -43,6 +43,11 @@ class Loan:
         self.interest_strategy = interest_strategy
         self.status = status
         self.date_created = datetime.now()
+        BankSystem("").add_loan(self)
+
+    def __del__(self):
+        BankSystem("").remove_loan(self)
+
 
     def calculate_interest(self) -> float:
         return self.interest_strategy.calculate_percentage(self.amount, self.interest_rate, self.term)
@@ -52,6 +57,8 @@ class Loan:
             raise ValueError("Status must be 'issued' or 'redeemed'.")
         # Думав зробити випадок, якщо статус_новий == статус_старий
         self.status = new_status
+        if self.status == "redeemed":
+            self.client.remove_loan(self)
 
     def get_info(self) -> str:
         return (f"Loan ID: {self.id}\n"
@@ -62,3 +69,6 @@ class Loan:
                 f"Status: {self.status}\n"
                 f"Date Created: {self.date_created.strftime('%d/%m/%Y')}\n"
                 f"Interest: {self.calculate_interest():.2f}")
+
+
+

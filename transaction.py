@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from account import Account
+from banksystem import BankSystem
 
 
 class Transaction(ABC):
@@ -14,13 +15,17 @@ class Transaction(ABC):
         return Transaction.id_counter
 
     def __init__(self, amount: float, account: 'Account'):
-        self.id = Transaction.generate_id()
+        self.transaction_id = Transaction.generate_id()
         self.account = account
         self.amount = float(amount)
         self.date = datetime.now()
+        BankSystem("").add_transaction(self)
+
+    def __del__(self):
+        BankSystem("").remove_transaction(self)
 
     def get_info(self):
-        return f"Transaction {self.id} at {self.date.strftime('%d/%m/%Y %H:%M:%S')}"
+        return f"Transaction {self.transaction_id} at {self.date.strftime('%d/%m/%Y %H:%M:%S')}"
 
     @abstractmethod
     def execute(self):
@@ -114,7 +119,7 @@ class TransactionManager:
                 self.redo_stack.clear()
                 print("Done", transaction.get_info())
             except Exception as ex:
-                print(f"Failed to execute transaction {transaction.id}: {ex}")
+                print(f"Failed to execute transaction {transaction.transaction_id}: {ex}")
         self.transactions.clear()
 
     def audit_transactions(self):
@@ -136,7 +141,7 @@ class TransactionManager:
             self.redo_stack.append(transaction)
             print(f"Undone: {transaction.get_info()}")
         except Exception as ex:
-            print(f"Failed to undo transaction {transaction.id}: {ex}")
+            print(f"Failed to undo transaction {transaction.transaction_id}: {ex}")
 
     def redo(self):
         if not self.redo_stack:
@@ -148,4 +153,4 @@ class TransactionManager:
             self.undo_stack.append(transaction)
             print(f"Redone: {transaction.get_info()}")
         except Exception as ex:
-            print(f"Failed to redo transaction {transaction.id}: {ex}")
+            print(f"Failed to redo transaction {transaction.transaction_id}: {ex}")
