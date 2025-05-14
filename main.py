@@ -5,7 +5,7 @@ from report import ReportFactory
 from banksystem import BankSystem
 from datetime import datetime
 import time
-from transaction import TransactionFactory
+from transaction import TransactionFactory, TransactionManager
 
 if __name__ == "__main__":
     bank = BankSystem("MONOBAK")
@@ -30,8 +30,20 @@ if __name__ == "__main__":
     result = acc_report.generate([acc1])
     print(result)
 
-    tf = TransactionFactory.create_transaction("deposit", 250.0, acc1)
-    tf.execute()
+
+    tf1 = TransactionFactory.create_transaction("deposit", 250.0, acc1)
+    tf2 = TransactionFactory.create_transaction("withdraw", 200.0, acc1)
+    array = [tf1, tf2]
+    tm = TransactionManager()
+    for t in array:
+        tm.add_transaction(t)
+
+    print("EXECUTE\n")
+    tm.batch_execute()
+    print("UNDO\n")
+    tm.undo()
+
+
 
     cus1.remove_account(acc1)
     print("After removing account from customer acc_list\n", acc1.get_info())
